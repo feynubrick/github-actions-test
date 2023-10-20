@@ -1,9 +1,11 @@
-name: Branch Name Check
+name: PR Branch Name Check
 
 on:
-  create:
-    branches:
-      - '*'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   check-branch-name:
@@ -14,8 +16,8 @@ jobs:
 
     - name: Validate branch name
       run: |
-        BRANCH_NAME=${GITHUB_REF##*/}
-        PARENT_BRANCH=$(git show-branch | grep '*' | grep -v "$BRANCH_NAME" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
+        BRANCH_NAME=${GITHUB_HEAD_REF}
+        PARENT_BRANCH=$(git for-each-ref --format '%(upstream:short)' $(git symbolic-ref -q HEAD))
         
         # develop 브랜치에서 갈라져 나온 경우
         if [[ "$PARENT_BRANCH" == "develop" ]]; then
