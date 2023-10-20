@@ -18,6 +18,8 @@ jobs:
       run: |
         BRANCH_NAME=${GITHUB_HEAD_REF}
         PARENT_BRANCH=$(git for-each-ref --format '%(upstream:short)' $(git symbolic-ref -q HEAD))
+        echo "BRANCH_NAME: $BRANCH_NAME"
+        echo "PARENT_BRANCH: $PARENT_BRANCH"
         
         # develop 브랜치에서 갈라져 나온 경우
         if [[ "$PARENT_BRANCH" == "develop" ]]; then
@@ -27,17 +29,23 @@ jobs:
           elif [[ "$BRANCH_NAME" != feature/* ]]; then
             echo "Error: Branches from 'develop' should start with 'feature/'."
             exit 1
+          else
+            echo "dev else"
           fi
         # main 브랜치에서 갈라져 나온 경우
         elif [[ "$PARENT_BRANCH" == "main" ]]; then
           if [[ "$BRANCH_NAME" != hotfix/* ]]; then
             echo "Error: Branches from 'main' should start with 'hotfix/'."
             exit 1
+          else
+            echo "main else"
           fi
         # release/* 브랜치에서 갈라져 나온 경우
         elif [[ "$PARENT_BRANCH" == release/* ]]; then
           if [[ "$BRANCH_NAME" != bugfix/* ]]; then
             echo "Error: Branches from 'release/*' should start with 'bugfix/'."
             exit 1
+          else
+            echo "release else"
           fi
         fi
