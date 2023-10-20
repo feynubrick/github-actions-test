@@ -1,0 +1,41 @@
+name: Branch Name Check
+
+on:
+  create:
+    branches:
+      - '*'
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Validate branch name
+      run: |
+        BRANCH_NAME=${GITHUB_REF##*/}
+        PARENT_BRANCH=$(git show-branch | grep '*' | grep -v "$BRANCH_NAME" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
+        
+        # develop 브랜치에서 갈라져 나온 경우
+        if [[ "$PARENT_BRANCH" == "develop" ]]; then
+          if [[ "$BRANCH_NAME" == release/* ]]; then
+            echo "Valid branch name. Proceeding."
+            exit 0
+          elif [[ "$BRANCH_NAME" != feature/* ]]; then
+            echo "Error: Branches from 'develop' should start with 'feature/'."
+            exit 1
+          fi
+        # main 브랜치에서 갈라져 나온 경우
+        elif [[ "$PARENT_BRANCH" == "main" ]]; then
+          if [[ "$BRANCH_NAME" != hotfix/* ]]; then
+            echo "Error: Branches from 'main' should start with 'hotfix/'."
+            exit 1
+          fi
+        # release/* 브랜치에서 갈라져 나온 경우
+        elif [[ "$PARENT_BRANCH" == release/* ]]; then
+          if [[ "$BRANCH_NAME" != bugfix/* ]]; then
+            echo "Error: Branches from 'release/*' should start with 'bugfix/'."
+            exit 1
+          fi
+        fi
