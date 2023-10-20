@@ -1,0 +1,25 @@
+name: Add branch prefix
+
+on:
+  create:
+    branches:
+      - '*'
+
+jobs:
+  add-prefix:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Add prefix to branch
+      run: |
+        BRANCH_NAME=${GITHUB_REF##*/}
+        if [[ $BRANCH_NAME == release* ]]; then
+          # "release"로 시작하는 브랜치 이름에는 prefix를 추가하지 않습니다.
+          exit 0
+        elif [[ $GITHUB_REF == refs/heads/develop* ]]; then
+          git branch -m "feature/$BRANCH_NAME"
+        elif [[ $GITHUB_REF == refs/heads/release/* ]]; then
+          git branch -m "bugfix/$BRANCH_NAME"
+        fi
